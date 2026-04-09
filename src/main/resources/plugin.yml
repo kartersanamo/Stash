@@ -1,0 +1,5 @@
+name: Stash
+version: '$version'
+
+main: com.kartersanamo.stash.Stash
+api-version: '1.21'
