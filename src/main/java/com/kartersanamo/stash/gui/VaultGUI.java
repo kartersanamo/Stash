@@ -29,42 +29,45 @@ public class VaultGUI {
                 .replace("%owner%", ownerName)
                 .replace("%page%", String.valueOf(page));
 
-        int inventorySize = (rows + 1) * 9;
+        boolean hasControlRow = rows < 6;
+        int inventorySize = hasControlRow ? (rows + 1) * 9 : rows * 9;
         Inventory inventory = Bukkit.createInventory(null, inventorySize, title);
         ItemStack[] stored = plugin.getVaultManager().getPageContents(owner, page, rows);
         for (int i = 0; i < stored.length; i++) {
             inventory.setItem(i, stored[i]);
         }
 
-        int navStart = rows * 9;
-        inventory.setItem(navStart + 3, new ItemBuilder(Material.ARROW)
-                .name(plugin.getMessagesUtil().get("gui.prev-name"))
-                .lore(List.of(plugin.getMessagesUtil().get("gui.prev-lore")))
-                .build());
-        inventory.setItem(navStart + 4, new ItemBuilder(Material.PAPER)
-                .name(plugin.getMessagesUtil().get("gui.page-info-name")
-                        .replace("%page%", String.valueOf(page))
-                        .replace("%max%", String.valueOf(maxPages)))
-                .build());
-        inventory.setItem(navStart + 5, new ItemBuilder(Material.ARROW)
-                .name(plugin.getMessagesUtil().get("gui.next-name"))
-                .lore(List.of(plugin.getMessagesUtil().get("gui.next-lore")))
-                .build());
-        if (!readOnly) {
-            inventory.setItem(navStart + 2, new ItemBuilder(Material.IRON_DOOR)
-                    .name(plugin.getMessagesUtil().get("gui.toggle-lock-name"))
-                    .lore(List.of(plugin.getMessagesUtil().get("gui.toggle-lock-lore")))
+        if (hasControlRow) {
+            int navStart = rows * 9;
+            inventory.setItem(navStart + 3, new ItemBuilder(Material.ARROW)
+                    .name(plugin.getMessagesUtil().get("gui.prev-name"))
+                    .lore(List.of(plugin.getMessagesUtil().get("gui.prev-lore")))
                     .build());
-            inventory.setItem(navStart + 6, new ItemBuilder(Material.BARRIER)
-                    .name(plugin.getMessagesUtil().get("gui.clear-name"))
-                    .lore(List.of(plugin.getMessagesUtil().get("gui.clear-lore")))
+            inventory.setItem(navStart + 4, new ItemBuilder(Material.PAPER)
+                    .name(plugin.getMessagesUtil().get("gui.page-info-name")
+                            .replace("%page%", String.valueOf(page))
+                            .replace("%max%", String.valueOf(maxPages)))
                     .build());
-        }
-        if (readOnly) {
-            inventory.setItem(navStart + 7, new ItemBuilder(Material.BOOK)
-                    .name(plugin.getMessagesUtil().get("gui.read-only-name"))
-                    .lore(List.of(plugin.getMessagesUtil().get("gui.read-only-lore")))
+            inventory.setItem(navStart + 5, new ItemBuilder(Material.ARROW)
+                    .name(plugin.getMessagesUtil().get("gui.next-name"))
+                    .lore(List.of(plugin.getMessagesUtil().get("gui.next-lore")))
                     .build());
+            if (!readOnly) {
+                inventory.setItem(navStart + 2, new ItemBuilder(Material.IRON_DOOR)
+                        .name(plugin.getMessagesUtil().get("gui.toggle-lock-name"))
+                        .lore(List.of(plugin.getMessagesUtil().get("gui.toggle-lock-lore")))
+                        .build());
+                inventory.setItem(navStart + 6, new ItemBuilder(Material.BARRIER)
+                        .name(plugin.getMessagesUtil().get("gui.clear-name"))
+                        .lore(List.of(plugin.getMessagesUtil().get("gui.clear-lore")))
+                        .build());
+            }
+            if (readOnly) {
+                inventory.setItem(navStart + 7, new ItemBuilder(Material.BOOK)
+                        .name(plugin.getMessagesUtil().get("gui.read-only-name"))
+                        .lore(List.of(plugin.getMessagesUtil().get("gui.read-only-lore")))
+                        .build());
+            }
         }
 
         plugin.getGuiManager().setOpenVault(viewer.getUniqueId(),
