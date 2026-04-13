@@ -30,13 +30,14 @@ vault:
   cleared: "&aVault page %value% has been cleared."
 
 admin:
-  usage: "&eUsage: /pv admin <inspect|setpages|setrows|audit> <player/value>"
+  usage: "&eUsage: /pv admin <inspect|setpages|setrows|audit> ..."
   inspect-usage: "&eUsage: /pv admin inspect <player> [page]"
   inspect-opened: "&aOpened %player%'s vault in read-only mode."
   number-required: "&cThat value must be a number."
   updated-pages: "&aUpdated page override to %value%."
   updated-rows: "&aUpdated row override to %value%."
   audit-header: "&eRecent audit events:"
+  audit-header-page: "&eAudit page %value%"
 
 gui:
   vault-title: "&8Stash: %owner% [Page %page%]"

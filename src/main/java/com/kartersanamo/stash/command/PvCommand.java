@@ -1,6 +1,7 @@
 package com.kartersanamo.stash.command;
 
 import com.kartersanamo.stash.Stash;
+import com.kartersanamo.stash.api.chat.ColorUtil;
 import com.kartersanamo.stash.gui.VaultGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -216,19 +217,39 @@ public class PvCommand implements CommandExecutor, TabCompleter {
 
         if (args[1].equalsIgnoreCase("audit")) {
             int limit = 10;
+            int page = 1;
+            String actorFilter = null;
+            String actionFilter = null;
             if (args.length >= 3) {
                 try {
-                    limit = Integer.parseInt(args[2]);
+                    page = Integer.parseInt(args[2]);
                 } catch (NumberFormatException exception) {
                     plugin.getMessagesUtil().send(player, "admin.number-required");
                     return true;
                 }
             }
-            plugin.getMessagesUtil().send(player, "admin.audit-header");
-            for (String line : plugin.getAuditManager().getRecentFormatted(limit)) {
-                player.sendMessage(com.kartersanamo.stash.api.chat.ColorUtil.color(line));
+            if (args.length >= 4) {
+                try {
+                    limit = Integer.parseInt(args[3]);
+                } catch (NumberFormatException exception) {
+                    plugin.getMessagesUtil().send(player, "admin.number-required");
+                    return true;
+                }
             }
-            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_AUDIT_VIEW", "limit=" + limit);
+            if (args.length >= 5 && !args[4].equalsIgnoreCase("*")) {
+                actorFilter = args[4];
+            }
+            if (args.length >= 6 && !args[5].equalsIgnoreCase("*")) {
+                actionFilter = args[5];
+            }
+            var auditPage = plugin.getAuditManager().getFilteredPage(page, limit, actorFilter, actionFilter);
+            plugin.getMessagesUtil().send(player, "admin.audit-header-page", "%value%",
+                    auditPage.page() + "/" + auditPage.totalPages() + " (" + auditPage.totalMatches() + " matches)");
+            for (String line : auditPage.lines()) {
+                player.sendMessage(ColorUtil.color(line));
+            }
+            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_AUDIT_VIEW",
+                    "page=" + page + ",limit=" + limit + ",actor=" + actorFilter + ",action=" + actionFilter);
             return true;
         }
 

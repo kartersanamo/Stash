@@ -53,9 +53,14 @@ public class StashCommand implements CommandExecutor, TabCompleter {
                 plugin.getMessagesUtil().send(sender, "general.no-permission");
                 return true;
             }
-            List<String> backups = plugin.getBackupManager().listBackups();
-            plugin.getMessagesUtil().send(sender, "stash.backup-list", "%value%",
-                    backups.isEmpty() ? "none" : String.join(", ", backups));
+            List<String> backups = plugin.getBackupManager().listBackupIndexSummaries();
+            if (backups.isEmpty()) {
+                backups = plugin.getBackupManager().listBackups();
+            }
+            plugin.getMessagesUtil().send(sender, "stash.backup-list", "%value%", backups.isEmpty() ? "none" : "");
+            for (String backup : backups) {
+                sender.sendMessage(ColorUtil.color("&7- &f" + backup));
+            }
             return true;
         }
 
@@ -88,17 +93,36 @@ public class StashCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             int limit = 10;
+            int page = 1;
+            String actorFilter = null;
+            String actionFilter = null;
             if (args.length >= 2) {
                 try {
-                    limit = Integer.parseInt(args[1]);
+                    page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException exception) {
                     plugin.getMessagesUtil().send(sender, "admin.number-required");
                     return true;
                 }
             }
+            if (args.length >= 3) {
+                try {
+                    limit = Integer.parseInt(args[2]);
+                } catch (NumberFormatException exception) {
+                    plugin.getMessagesUtil().send(sender, "admin.number-required");
+                    return true;
+                }
+            }
+            if (args.length >= 4 && !args[3].equalsIgnoreCase("*")) {
+                actorFilter = args[3];
+            }
+            if (args.length >= 5 && !args[4].equalsIgnoreCase("*")) {
+                actionFilter = args[4];
+            }
 
-            plugin.getMessagesUtil().send(sender, "admin.audit-header");
-            for (String line : plugin.getAuditManager().getRecentFormatted(limit)) {
+            var auditPage = plugin.getAuditManager().getFilteredPage(page, limit, actorFilter, actionFilter);
+            plugin.getMessagesUtil().send(sender, "admin.audit-header-page", "%value%",
+                    auditPage.page() + "/" + auditPage.totalPages() + " (" + auditPage.totalMatches() + " matches)");
+            for (String line : auditPage.lines()) {
                 sender.sendMessage(ColorUtil.color(line));
             }
             return true;
@@ -115,6 +139,9 @@ public class StashCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("restore")) {
             return plugin.getBackupManager().listBackups();
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("audit")) {
+            return List.of("1", "2", "3");
         }
         return List.of();
     }

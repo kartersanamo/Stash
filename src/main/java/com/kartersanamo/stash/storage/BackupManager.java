@@ -1,6 +1,8 @@
 package com.kartersanamo.stash.storage;
 
 import com.kartersanamo.stash.Stash;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class BackupManager {
@@ -37,6 +42,7 @@ public class BackupManager {
             Files.copy(audits.toPath(), new File(backupDir, "audits-" + timestamp + ".yml").toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
         }
+        writeSnapshotIndex(timestamp, vaults.exists(), audits.exists());
         return timestamp;
     }
 
@@ -66,5 +72,46 @@ public class BackupManager {
         File vaults = new File(plugin.getDataFolder(), "vaults.yml");
         Files.copy(backupFile.toPath(), vaults.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return true;
+    }
+
+    public List<String> listBackupIndexSummaries() {
+        File indexFile = new File(plugin.getDataFolder(), "backups/index.yml");
+        if (!indexFile.exists()) {
+            return List.of();
+        }
+        FileConfiguration index = YamlConfiguration.loadConfiguration(indexFile);
+        List<Map<?, ?>> snapshots = index.getMapList("snapshots");
+        List<String> lines = new ArrayList<>();
+        for (Map<?, ?> snapshot : snapshots.reversed()) {
+            String timestamp = String.valueOf(snapshot.containsKey("timestamp") ? snapshot.get("timestamp") : "unknown");
+            String vault = String.valueOf(snapshot.containsKey("vaultFile") ? snapshot.get("vaultFile") : "n/a");
+            String audit = String.valueOf(snapshot.containsKey("auditFile") ? snapshot.get("auditFile") : "n/a");
+            lines.add(timestamp + " | " + vault + " | " + audit);
+        }
+        return lines;
+    }
+
+    private void writeSnapshotIndex(String timestamp, boolean hasVault, boolean hasAudit) throws IOException {
+        File backupDir = new File(plugin.getDataFolder(), "backups");
+        File indexFile = new File(backupDir, "index.yml");
+        FileConfiguration index = YamlConfiguration.loadConfiguration(indexFile);
+        List<Map<?, ?>> existing = index.getMapList("snapshots");
+        List<Map<String, Object>> snapshots = new ArrayList<>();
+        for (Map<?, ?> map : existing) {
+            Map<String, Object> converted = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                converted.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            snapshots.add(converted);
+        }
+
+        Map<String, Object> snapshot = new HashMap<>();
+        snapshot.put("timestamp", timestamp);
+        snapshot.put("vaultFile", hasVault ? "vaults-" + timestamp + ".yml" : "missing");
+        snapshot.put("auditFile", hasAudit ? "audits-" + timestamp + ".yml" : "missing");
+        snapshots.add(snapshot);
+
+        index.set("snapshots", snapshots);
+        index.save(indexFile);
     }
 }
