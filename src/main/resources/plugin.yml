@@ -1,5 +1,28 @@
 name: Stash
-version: '$version'
-
+version: '${project.version}'
 main: com.kartersanamo.stash.Stash
 api-version: '1.21'
+authors: [KarterSanamo]
+
+commands:
+  pv:
+    description: Open personal vaults
+    usage: /pv [page|list|admin ...]
+    aliases: [vault]
+  stash:
+    description: Stash plugin command
+    usage: /stash reload
+
+permissions:
+  stash.use:
+    default: true
+  stash.command:
+    default: true
+  stash.reload:
+    default: op
+  stash.admin:
+    default: op
+  stash.pages.*:
+    default: false
+  stash.size.*:
+    default: false

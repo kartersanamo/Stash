@@ -1,0 +1,23 @@
+general:
+  players-only: "&cOnly players can use this command."
+  no-permission: "&cYou do not have permission to do that."
+
+stash:
+  usage: "&eUsage: /stash reload"
+  reloaded: "&aStash config, messages, and vault data reloaded."
+
+vault:
+  invalid-page: "&cThat vault page is invalid."
+  page-locked: "&cYou only have access to %value% page(s)."
+  list-pages: "&aYou currently have access to %value% vault page(s)."
+
+admin:
+  usage: "&eUsage: /pv admin <inspect|setpages|setrows> <player> [value]"
+  inspect-usage: "&eUsage: /pv admin inspect <player> [page]"
+  inspect-opened: "&aOpened %player%'s vault."
+  number-required: "&cThat value must be a number."
+  updated-pages: "&aUpdated page override to %value%."
+  updated-rows: "&aUpdated row override to %value%."
+
+gui:
+  vault-title: "&8Stash: %owner% [Page %page%]"

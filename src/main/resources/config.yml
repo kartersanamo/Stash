@@ -1,0 +1,11 @@
+vault:
+  default-pages: 1
+  max-pages: 6
+  default-rows: 3
+
+effects:
+  open-sound:
+    enabled: true
+    sound: BLOCK_ENDER_CHEST_OPEN
+    volume: 1.0
+    pitch: 1.0
