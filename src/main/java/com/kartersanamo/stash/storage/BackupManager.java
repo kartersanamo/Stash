@@ -74,6 +74,20 @@ public class BackupManager {
         return true;
     }
 
+    public RestorePreview previewRestore(String vaultBackupName) {
+        File backupFile = new File(plugin.getDataFolder(), "backups/" + vaultBackupName);
+        if (!backupFile.exists()) {
+            return new RestorePreview(false, vaultBackupName, 0, 0);
+        }
+
+        FileConfiguration current = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "vaults.yml"));
+        FileConfiguration incoming = YamlConfiguration.loadConfiguration(backupFile);
+
+        int currentPlayers = getPlayerCount(current);
+        int backupPlayers = getPlayerCount(incoming);
+        return new RestorePreview(true, vaultBackupName, currentPlayers, backupPlayers);
+    }
+
     public List<String> listBackupIndexSummaries() {
         File indexFile = new File(plugin.getDataFolder(), "backups/index.yml");
         if (!indexFile.exists()) {
@@ -113,5 +127,15 @@ public class BackupManager {
 
         index.set("snapshots", snapshots);
         index.save(indexFile);
+    }
+
+    private int getPlayerCount(FileConfiguration config) {
+        if (config.getConfigurationSection("players") == null) {
+            return 0;
+        }
+        return config.getConfigurationSection("players").getKeys(false).size();
+    }
+
+    public record RestorePreview(boolean exists, String backupName, int currentPlayerEntries, int backupPlayerEntries) {
     }
 }

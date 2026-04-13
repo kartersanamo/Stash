@@ -3,7 +3,7 @@ general:
   no-permission: "&cYou do not have permission to do that."
 
 stash:
-  usage: "&eUsage: /stash <reload|backup|backups|restore|audit>"
+  usage: "&eUsage: /stash <reload|backup|backups|restore|previewrestore|confirmrestore|audit>"
   reloaded: "&aStash config, messages, and vault data reloaded."
   backup-created: "&aBackup created with timestamp %value%."
   backup-failed: "&cFailed to create backup."
@@ -12,6 +12,9 @@ stash:
   restore-success: "&aRestored vault data from %value%."
   restore-missing: "&cBackup file not found."
   restore-failed: "&cFailed to restore backup."
+  restore-preview: "&eRestore preview: %value%"
+  restore-preview-confirm: "&cRun /stash confirmrestore within 30 seconds to apply."
+  restore-confirm-missing: "&cNo pending restore confirmation."
 
 vault:
   invalid-page: "&cThat vault page is invalid."
@@ -38,6 +41,8 @@ admin:
   updated-rows: "&aUpdated row override to %value%."
   audit-header: "&eRecent audit events:"
   audit-header-page: "&eAudit page %value%"
+  audit-export-success: "&aExported audit file: %value%"
+  audit-export-failed: "&cFailed to export audit file."
 
 gui:
   vault-title: "&8Stash: %owner% [Page %page%]"

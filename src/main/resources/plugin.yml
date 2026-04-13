@@ -11,7 +11,7 @@ commands:
     aliases: [vault]
   stash:
     description: Stash plugin command
-    usage: /stash <reload|backup|backups|restore|audit>
+    usage: /stash <reload|backup|backups|restore|previewrestore|confirmrestore|audit>
 
 permissions:
   stash.use:

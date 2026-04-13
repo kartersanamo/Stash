@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,5 +102,31 @@ public class AuditManager {
     }
 
     private record AuditEvent(String timestamp, String actor, String action, String details) {
+    }
+
+    public int exportCsv(File output, String actorFilter, String actionFilter) throws IOException {
+        AuditPage page = getFilteredPage(1, Integer.MAX_VALUE, actorFilter, actionFilter);
+        List<String> csv = new ArrayList<>();
+        csv.add("timestamp,actor,action,details");
+        for (String line : page.lines()) {
+            // Expected format: [timestamp] ACTION actor - details
+            String raw = line.replace("&7[", "")
+                    .replace("] &e", "|")
+                    .replace(" &f", "|")
+                    .replace(" &8- &7", "|")
+                    .replace("&", "");
+            String[] parts = raw.split("\\|", 4);
+            if (parts.length < 4) {
+                continue;
+            }
+            csv.add(escapeCsv(parts[0]) + "," + escapeCsv(parts[2]) + "," + escapeCsv(parts[1]) + "," + escapeCsv(parts[3]));
+        }
+        Files.write(output.toPath(), csv);
+        return page.totalMatches();
+    }
+
+    private String escapeCsv(String value) {
+        String escaped = value.replace("\"", "\"\"");
+        return "\"" + escaped + "\"";
     }
 }
