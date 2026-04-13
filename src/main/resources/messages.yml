@@ -3,7 +3,7 @@ general:
   no-permission: "&cYou do not have permission to do that."
 
 stash:
-  usage: "&eUsage: /stash <reload|backup|backups|restore>"
+  usage: "&eUsage: /stash <reload|backup|backups|restore|audit>"
   reloaded: "&aStash config, messages, and vault data reloaded."
   backup-created: "&aBackup created with timestamp %value%."
   backup-failed: "&cFailed to create backup."
@@ -20,14 +20,23 @@ vault:
   search-usage: "&eUsage: /pv search <query>"
   search-none: "&cNo vault pages matched '%query%'."
   search-results: "&aMatches found on pages: %value%"
+  lock-usage: "&eUsage: /pv <lock|unlock> <page>"
+  locked: "&aVault page %value% is now locked."
+  unlocked: "&aVault page %value% is now unlocked."
+  open-blocked-locked: "&cThat page is locked. Use /pv unlock <page> first."
+  clear-usage: "&eUsage: /pv clear <page>"
+  clear-confirm: "&cType /pv confirmclear in 30 seconds to clear page %value%."
+  clear-none: "&cNo pending clear confirmation found."
+  cleared: "&aVault page %value% has been cleared."
 
 admin:
-  usage: "&eUsage: /pv admin <inspect|setpages|setrows> <player> [value]"
+  usage: "&eUsage: /pv admin <inspect|setpages|setrows|audit> <player/value>"
   inspect-usage: "&eUsage: /pv admin inspect <player> [page]"
   inspect-opened: "&aOpened %player%'s vault."
   number-required: "&cThat value must be a number."
   updated-pages: "&aUpdated page override to %value%."
   updated-rows: "&aUpdated row override to %value%."
+  audit-header: "&eRecent audit events:"
 
 gui:
   vault-title: "&8Stash: %owner% [Page %page%]"

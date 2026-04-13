@@ -7,11 +7,11 @@ authors: [KarterSanamo]
 commands:
   pv:
     description: Open personal vaults
-    usage: /pv [page|list|search|admin ...]
+    usage: /pv [page|list|search|lock|unlock|clear|confirmclear|admin ...]
     aliases: [vault]
   stash:
     description: Stash plugin command
-    usage: /stash <reload|backup|backups|restore>
+    usage: /stash <reload|backup|backups|restore|audit>
 
 permissions:
   stash.use:
@@ -27,6 +27,8 @@ permissions:
   stash.admin.restore:
     default: op
   stash.admin.audit:
+    default: op
+  stash.admin.bypass:
     default: op
   stash.pages.*:
     default: false

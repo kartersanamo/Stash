@@ -11,11 +11,15 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class PvCommand implements CommandExecutor, TabCompleter {
     private final Stash plugin;
     private final VaultGUI vaultGUI;
+    private final Map<UUID, PendingClear> pendingClears = new HashMap<>();
 
     public PvCommand(Stash plugin) {
         this.plugin = plugin;
@@ -61,6 +65,71 @@ public class PvCommand implements CommandExecutor, TabCompleter {
                         "%value%", matches.toString().replace("[", "").replace("]", ""));
             }
             plugin.getAuditManager().log(player.getUniqueId(), "SEARCH", "query=" + query + ",matches=" + matches.size());
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("lock") || args[0].equalsIgnoreCase("unlock")) {
+            if (args.length < 2) {
+                plugin.getMessagesUtil().send(player, "vault.lock-usage");
+                return true;
+            }
+            int page;
+            try {
+                page = Integer.parseInt(args[1]);
+            } catch (NumberFormatException exception) {
+                plugin.getMessagesUtil().send(player, "vault.invalid-page");
+                return true;
+            }
+            int unlockedPages = plugin.getVaultManager().getAccessiblePages(player);
+            if (page < 1 || page > unlockedPages) {
+                plugin.getMessagesUtil().send(player, "vault.page-locked", "%value%", String.valueOf(unlockedPages));
+                return true;
+            }
+
+            boolean lockState = args[0].equalsIgnoreCase("lock");
+            plugin.getVaultManager().setPageLocked(player.getUniqueId(), page, lockState);
+            plugin.getMessagesUtil().send(player, lockState ? "vault.locked" : "vault.unlocked",
+                    "%value%", String.valueOf(page));
+            plugin.getAuditManager().log(player.getUniqueId(), lockState ? "LOCK_PAGE" : "UNLOCK_PAGE", "page=" + page);
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("clear")) {
+            if (args.length < 2) {
+                plugin.getMessagesUtil().send(player, "vault.clear-usage");
+                return true;
+            }
+            int page;
+            try {
+                page = Integer.parseInt(args[1]);
+            } catch (NumberFormatException exception) {
+                plugin.getMessagesUtil().send(player, "vault.invalid-page");
+                return true;
+            }
+            int unlockedPages = plugin.getVaultManager().getAccessiblePages(player);
+            if (page < 1 || page > unlockedPages) {
+                plugin.getMessagesUtil().send(player, "vault.page-locked", "%value%", String.valueOf(unlockedPages));
+                return true;
+            }
+
+            pendingClears.put(player.getUniqueId(), new PendingClear(page, System.currentTimeMillis() + 30000));
+            plugin.getMessagesUtil().send(player, "vault.clear-confirm", "%value%", String.valueOf(page));
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("confirmclear")) {
+            PendingClear pending = pendingClears.get(player.getUniqueId());
+            if (pending == null || pending.expiresAt() < System.currentTimeMillis()) {
+                pendingClears.remove(player.getUniqueId());
+                plugin.getMessagesUtil().send(player, "vault.clear-none");
+                return true;
+            }
+
+            int rows = plugin.getVaultManager().getRows(player);
+            plugin.getVaultManager().clearPage(player.getUniqueId(), pending.page(), rows);
+            plugin.getMessagesUtil().send(player, "vault.cleared", "%value%", String.valueOf(pending.page()));
+            plugin.getAuditManager().log(player.getUniqueId(), "CLEAR_PAGE", "page=" + pending.page());
+            pendingClears.remove(player.getUniqueId());
             return true;
         }
 
@@ -145,6 +214,24 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (args[1].equalsIgnoreCase("audit")) {
+            int limit = 10;
+            if (args.length >= 3) {
+                try {
+                    limit = Integer.parseInt(args[2]);
+                } catch (NumberFormatException exception) {
+                    plugin.getMessagesUtil().send(player, "admin.number-required");
+                    return true;
+                }
+            }
+            plugin.getMessagesUtil().send(player, "admin.audit-header");
+            for (String line : plugin.getAuditManager().getRecentFormatted(limit)) {
+                player.sendMessage(com.kartersanamo.stash.api.chat.ColorUtil.color(line));
+            }
+            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_AUDIT_VIEW", "limit=" + limit);
+            return true;
+        }
+
         plugin.getMessagesUtil().send(player, "admin.usage");
         return true;
     }
@@ -156,6 +243,11 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             plugin.getMessagesUtil().send(player, "vault.page-locked", "%value%", String.valueOf(unlockedPages));
             return;
         }
+        if (plugin.getVaultManager().isPageLocked(player.getUniqueId(), sanitizedPage)
+                && !player.hasPermission("stash.admin.bypass")) {
+            plugin.getMessagesUtil().send(player, "vault.open-blocked-locked");
+            return;
+        }
 
         int rows = plugin.getVaultManager().getRows(player);
         vaultGUI.open(player, player.getUniqueId(), sanitizedPage, unlockedPages, rows, player.getName());
@@ -165,11 +257,11 @@ public class PvCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("list", "search", "admin", "1", "2", "3");
+            return List.of("list", "search", "lock", "unlock", "clear", "confirmclear", "admin", "1", "2", "3");
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
-            return List.of("inspect", "setpages", "setrows");
+            return List.of("inspect", "setpages", "setrows", "audit");
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("admin")) {
@@ -179,5 +271,8 @@ public class PvCommand implements CommandExecutor, TabCompleter {
         }
 
         return List.of();
+    }
+
+    private record PendingClear(int page, long expiresAt) {
     }
 }

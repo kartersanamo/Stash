@@ -54,4 +54,19 @@ public class AuditManager {
         data.set("events", events);
         save();
     }
+
+    public List<String> getRecentFormatted(int limit) {
+        List<Map<?, ?>> raw = data.getMapList("events");
+        int start = Math.max(0, raw.size() - Math.max(1, limit));
+        LinkedList<String> lines = new LinkedList<>();
+        for (int i = start; i < raw.size(); i++) {
+            Map<?, ?> event = raw.get(i);
+            String timestamp = String.valueOf(event.containsKey("timestamp") ? event.get("timestamp") : "unknown-time");
+            String actor = String.valueOf(event.containsKey("actor") ? event.get("actor") : "unknown-actor");
+            String action = String.valueOf(event.containsKey("action") ? event.get("action") : "UNKNOWN");
+            String details = String.valueOf(event.containsKey("details") ? event.get("details") : "");
+            lines.add("&7[" + timestamp + "] &e" + action + " &f" + actor + " &8- &7" + details);
+        }
+        return lines;
+    }
 }

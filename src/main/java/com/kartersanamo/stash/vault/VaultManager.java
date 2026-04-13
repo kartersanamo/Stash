@@ -64,6 +64,11 @@ public class VaultManager {
         data.set(path, list);
     }
 
+    public void clearPage(UUID owner, int page, int rows) {
+        setPageContents(owner, page, new ItemStack[rows * 9]);
+        save();
+    }
+
     public int getAccessiblePages(Player player) {
         return getAccessiblePages(player.getUniqueId(), player);
     }
@@ -165,6 +170,15 @@ public class VaultManager {
 
     public void setPagesOverride(UUID playerId, int pages) {
         data.set("players." + playerId + ".settings.pages", Math.max(1, pages));
+        save();
+    }
+
+    public boolean isPageLocked(UUID playerId, int page) {
+        return data.getBoolean("players." + playerId + ".locks." + page, false);
+    }
+
+    public void setPageLocked(UUID playerId, int page, boolean locked) {
+        data.set("players." + playerId + ".locks." + page, locked);
         save();
     }
 
