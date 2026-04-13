@@ -39,6 +39,8 @@ public class VaultGUI {
 
         if (hasControlRow) {
             int navStart = rows * 9;
+            inventory.setItem(navStart, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build());
+            inventory.setItem(navStart + 1, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build());
             inventory.setItem(navStart + 3, new ItemBuilder(Material.ARROW)
                     .name(plugin.getMessagesUtil().get("gui.prev-name"))
                     .lore(List.of(plugin.getMessagesUtil().get("gui.prev-lore")))
@@ -52,6 +54,8 @@ public class VaultGUI {
                     .name(plugin.getMessagesUtil().get("gui.next-name"))
                     .lore(List.of(plugin.getMessagesUtil().get("gui.next-lore")))
                     .build());
+            inventory.setItem(navStart + 7, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build());
+            inventory.setItem(navStart + 8, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ").build());
             if (!readOnly) {
                 inventory.setItem(navStart + 2, new ItemBuilder(Material.IRON_DOOR)
                         .name(plugin.getMessagesUtil().get("gui.toggle-lock-name"))

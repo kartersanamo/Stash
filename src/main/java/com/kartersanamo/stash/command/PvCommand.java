@@ -1,7 +1,6 @@
 package com.kartersanamo.stash.command;
 
 import com.kartersanamo.stash.Stash;
-import com.kartersanamo.stash.api.chat.ColorUtil;
 import com.kartersanamo.stash.gui.PersonalVaultGUI;
 import com.kartersanamo.stash.gui.VaultGUI;
 import org.bukkit.Bukkit;
@@ -252,7 +251,7 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             plugin.getMessagesUtil().send(player, "admin.audit-header-page", "%value%",
                     auditPage.page() + "/" + auditPage.totalPages() + " (" + auditPage.totalMatches() + " matches)");
             for (String line : auditPage.lines()) {
-                player.sendMessage(ColorUtil.color(line));
+                plugin.getMessagesUtil().sendRaw(player, line, false);
             }
             plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_AUDIT_VIEW",
                     "page=" + page + ",limit=" + limit + ",actor=" + actorFilter + ",action=" + actionFilter);

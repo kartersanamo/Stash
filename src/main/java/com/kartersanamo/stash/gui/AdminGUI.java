@@ -51,7 +51,7 @@ public class AdminGUI {
 
     public void openPlayers(Player player, int page) {
         List<String> playerNames = new ArrayList<>(plugin.getVaultManager().listLoadedPlayers());
-        int pageSize = 45;
+        int pageSize = 28;
         int totalPages = Math.max(1, (int) Math.ceil((double) playerNames.size() / pageSize));
         int safePage = Math.max(1, Math.min(page, totalPages));
         int from = (safePage - 1) * pageSize;
@@ -59,12 +59,14 @@ public class AdminGUI {
 
         Inventory inventory = Bukkit.createInventory(null, 54, PLAYERS_TITLE + " [" + safePage + "/" + totalPages + "]");
         applyFrame(inventory, Material.GRAY_STAINED_GLASS_PANE);
+        List<Integer> contentSlots = getInteriorContentSlots(inventory.getSize());
+        int slotIndex = 0;
         for (int i = from; i < to; i++) {
             String name = playerNames.get(i);
             OfflinePlayer target = resolvePlayerByName(name);
             int pages = plugin.getVaultManager().getAccessiblePages(target.getUniqueId(), target.getPlayer());
             int rows = plugin.getVaultManager().getRows(target.getUniqueId(), target.getPlayer());
-            inventory.setItem(i - from, new ItemBuilder(Material.PLAYER_HEAD).name("§f" + name)
+            inventory.setItem(contentSlots.get(slotIndex++), new ItemBuilder(Material.PLAYER_HEAD).name("§f" + name)
                     .lore(List.of("§7Pages: §f" + pages, "§7Rows: §f" + rows, "§bClick to manage profile"))
                     .build());
         }
@@ -117,13 +119,14 @@ public class AdminGUI {
         List<String> backups = plugin.getBackupManager().listBackups();
         Inventory inventory = Bukkit.createInventory(null, 54, BACKUPS_TITLE);
         applyFrame(inventory, Material.PURPLE_STAINED_GLASS_PANE);
+        List<Integer> contentSlots = getInteriorContentSlots(inventory.getSize());
         int index = 0;
         for (String backup : backups.reversed()) {
-            if (index >= 45) {
+            if (index >= contentSlots.size()) {
                 break;
             }
             var preview = plugin.getBackupManager().previewRestore(backup);
-            inventory.setItem(index++, new ItemBuilder(Material.PAPER).name("§f" + backup)
+            inventory.setItem(contentSlots.get(index++), new ItemBuilder(Material.PAPER).name("§f" + backup)
                     .lore(List.of("§7Players: §f" + preview.current().players() + " -> " + preview.backup().players(),
                             "§7Pages: §f" + preview.current().pages() + " -> " + preview.backup().pages(),
                             "§7Items: §f" + preview.current().items() + " -> " + preview.backup().items(),
@@ -143,12 +146,13 @@ public class AdminGUI {
         var auditPage = plugin.getAuditManager().getFilteredPage(page, 28, null, null);
         Inventory inventory = Bukkit.createInventory(null, 45, AUDIT_TITLE + " [" + auditPage.page() + "/" + auditPage.totalPages() + "]");
         applyFrame(inventory, Material.YELLOW_STAINED_GLASS_PANE);
+        List<Integer> contentSlots = getInteriorContentSlots(inventory.getSize());
         int slot = 0;
         for (String line : auditPage.lines()) {
-            if (slot >= 28) {
+            if (slot >= contentSlots.size()) {
                 break;
             }
-            inventory.setItem(slot++, new ItemBuilder(Material.BOOK).name("§fAudit Event")
+            inventory.setItem(contentSlots.get(slot++), new ItemBuilder(Material.BOOK).name("§fAudit Event")
                     .lore(List.of(line.replace('&', '§')))
                     .build());
         }
@@ -184,5 +188,16 @@ public class AdminGUI {
                 }
             }
         }
+    }
+
+    private List<Integer> getInteriorContentSlots(int size) {
+        List<Integer> slots = new ArrayList<>();
+        int rows = size / 9;
+        for (int row = 1; row < rows - 1; row++) {
+            for (int col = 1; col < 8; col++) {
+                slots.add(row * 9 + col);
+            }
+        }
+        return slots;
     }
 }

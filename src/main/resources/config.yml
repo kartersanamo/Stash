@@ -1,6 +1,6 @@
 vault:
   default-pages: 1
-  max-pages: 6
+  max-pages: 54
   default-rows: 5
 
 effects:

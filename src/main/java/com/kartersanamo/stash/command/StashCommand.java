@@ -1,7 +1,6 @@
 package com.kartersanamo.stash.command;
 
 import com.kartersanamo.stash.Stash;
-import com.kartersanamo.stash.api.chat.ColorUtil;
 import com.kartersanamo.stash.gui.AdminGUI;
 import org.bukkit.entity.Player;
 import org.bukkit.command.Command;
@@ -71,7 +70,7 @@ public class StashCommand implements CommandExecutor, TabCompleter {
             }
             plugin.getMessagesUtil().send(sender, "stash.backup-list", "%value%", backups.isEmpty() ? "none" : "");
             for (String backup : backups) {
-                sender.sendMessage(ColorUtil.color("&7- &f" + backup));
+                plugin.getMessagesUtil().sendRaw(sender, "&7- &f" + backup, false);
             }
             return true;
         }
@@ -163,7 +162,7 @@ public class StashCommand implements CommandExecutor, TabCompleter {
                 var history = plugin.getBackupManager().listBackupIndexSummaries();
                 plugin.getMessagesUtil().send(sender, "stash.backup-list", "%value%", history.isEmpty() ? "none" : "");
                 for (String row : history) {
-                    sender.sendMessage(ColorUtil.color("&7- &f" + row));
+                    plugin.getMessagesUtil().sendRaw(sender, "&7- &f" + row, false);
                 }
                 return true;
             }
@@ -248,7 +247,7 @@ public class StashCommand implements CommandExecutor, TabCompleter {
             plugin.getMessagesUtil().send(sender, "admin.audit-header-page", "%value%",
                     auditPage.page() + "/" + auditPage.totalPages() + " (" + auditPage.totalMatches() + " matches)");
             for (String line : auditPage.lines()) {
-                sender.sendMessage(ColorUtil.color(line));
+                plugin.getMessagesUtil().sendRaw(sender, line, false);
             }
             return true;
         }

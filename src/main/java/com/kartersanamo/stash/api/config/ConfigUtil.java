@@ -21,7 +21,7 @@ public class ConfigUtil {
     }
 
     public int getMaxPages() {
-        return Math.max(1, config.getInt("vault.max-pages", 6));
+        return Math.max(1, config.getInt("vault.max-pages", 54));
     }
 
     public int getDefaultRows() {

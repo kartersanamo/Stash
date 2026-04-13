@@ -22,8 +22,8 @@ public class PersonalVaultGUI {
 
     public void openList(Player player) {
         int pages = plugin.getVaultManager().getAccessiblePages(player);
-        int displayPages = Math.min(pages, 45);
-        int size = displayPages <= 9 ? 9 : (displayPages <= 18 ? 18 : (displayPages <= 27 ? 27 : (displayPages <= 36 ? 36 : 45)));
+        int displayPages = Math.min(pages, 54);
+        int size = displayPages <= 9 ? 9 : (displayPages <= 18 ? 18 : (displayPages <= 27 ? 27 : (displayPages <= 36 ? 36 : (displayPages <= 45 ? 45 : 54))));
         Inventory inventory = Bukkit.createInventory(null, size, LIST_TITLE);
         for (int page = 1; page <= displayPages; page++) {
             VaultManager.PageDisplayMeta meta = plugin.getVaultManager().getPageDisplayMeta(player.getUniqueId(), page);

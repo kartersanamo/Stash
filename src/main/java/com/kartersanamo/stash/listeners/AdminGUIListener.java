@@ -1,7 +1,6 @@
 package com.kartersanamo.stash.listeners;
 
 import com.kartersanamo.stash.Stash;
-import com.kartersanamo.stash.api.chat.ColorUtil;
 import com.kartersanamo.stash.gui.AdminGUI;
 import com.kartersanamo.stash.gui.VaultGUI;
 import org.bukkit.ChatColor;
@@ -120,7 +119,7 @@ public class AdminGUIListener implements Listener {
                 return;
             }
             if (plain.contains("Rows +1")) {
-                plugin.getVaultManager().setRowsOverride(targetId, Math.min(6, currentRows + 1));
+                plugin.getVaultManager().setRowsOverride(targetId, Math.min(5, currentRows + 1));
                 adminGUI.openProfile(player, targetId, lockPage);
                 return;
             }
@@ -219,12 +218,15 @@ public class AdminGUIListener implements Listener {
             if (plain.contains("Rollback History")) {
                 plugin.getMessagesUtil().send(player, "stash.backup-list", "%value%", "");
                 for (String row : plugin.getBackupManager().listBackupIndexSummaries()) {
-                    player.sendMessage(ColorUtil.color("&7- &f" + row));
+                    plugin.getMessagesUtil().sendRaw(player, "&7- &f" + row, false);
                 }
                 return;
             }
             if (plain.contains("Back")) {
                 adminGUI.openMain(player);
+                return;
+            }
+            if (event.getCurrentItem().getType() != org.bukkit.Material.PAPER) {
                 return;
             }
             String backupName = plain.trim();
