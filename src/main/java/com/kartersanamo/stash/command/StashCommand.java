@@ -2,6 +2,8 @@ package com.kartersanamo.stash.command;
 
 import com.kartersanamo.stash.Stash;
 import com.kartersanamo.stash.api.chat.ColorUtil;
+import com.kartersanamo.stash.gui.AdminGUI;
+import org.bukkit.entity.Player;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,7 +28,11 @@ public class StashCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            plugin.getMessagesUtil().send(sender, "stash.usage");
+            if (sender instanceof Player player && player.hasPermission("stash.admin")) {
+                new AdminGUI(plugin).openMain(player);
+            } else {
+                plugin.getMessagesUtil().send(sender, "stash.usage");
+            }
             return true;
         }
 
@@ -110,8 +116,9 @@ public class StashCommand implements CommandExecutor, TabCompleter {
 
             pendingRestores.put(sender.getName(), new PendingRestore(args[1], System.currentTimeMillis() + 30000));
             plugin.getMessagesUtil().send(sender, "stash.restore-preview", "%value%",
-                    preview.backupName() + " | current players=" + preview.currentPlayerEntries()
-                            + ", backup players=" + preview.backupPlayerEntries());
+                    preview.backupName() + " | players " + preview.current().players() + "->" + preview.backup().players()
+                            + ", pages " + preview.current().pages() + "->" + preview.backup().pages()
+                            + ", items " + preview.current().items() + "->" + preview.backup().items());
             plugin.getMessagesUtil().send(sender, "stash.restore-preview-confirm");
             return true;
         }
@@ -140,6 +147,42 @@ public class StashCommand implements CommandExecutor, TabCompleter {
             } finally {
                 pendingRestores.remove(sender.getName());
             }
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("rollback")) {
+            if (!sender.hasPermission("stash.admin.restore")) {
+                plugin.getMessagesUtil().send(sender, "general.no-permission");
+                return true;
+            }
+            if (args.length < 2) {
+                plugin.getMessagesUtil().send(sender, "stash.rollback-usage");
+                return true;
+            }
+            if (args[1].equalsIgnoreCase("history")) {
+                var history = plugin.getBackupManager().listBackupIndexSummaries();
+                plugin.getMessagesUtil().send(sender, "stash.backup-list", "%value%", history.isEmpty() ? "none" : "");
+                for (String row : history) {
+                    sender.sendMessage(ColorUtil.color("&7- &f" + row));
+                }
+                return true;
+            }
+            if (args[1].equalsIgnoreCase("latest")) {
+                String latest = plugin.getBackupManager().getLatestBackupName();
+                if (latest == null) {
+                    plugin.getMessagesUtil().send(sender, "stash.restore-missing");
+                    return true;
+                }
+                try {
+                    plugin.getBackupManager().restoreBackup(latest);
+                    plugin.getVaultManager().load();
+                    plugin.getMessagesUtil().send(sender, "stash.restore-success", "%value%", latest);
+                } catch (IOException exception) {
+                    plugin.getMessagesUtil().send(sender, "stash.restore-failed");
+                }
+                return true;
+            }
+            plugin.getMessagesUtil().send(sender, "stash.rollback-usage");
             return true;
         }
 
@@ -217,7 +260,7 @@ public class StashCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("reload", "backup", "backups", "restore", "previewrestore", "confirmrestore", "audit");
+            return List.of("reload", "backup", "backups", "restore", "previewrestore", "confirmrestore", "rollback", "audit");
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("restore")) {
             return plugin.getBackupManager().listBackups();
@@ -227,6 +270,9 @@ public class StashCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("audit")) {
             return List.of("1", "2", "3", "export");
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("rollback")) {
+            return List.of("history", "latest");
         }
         return List.of();
     }

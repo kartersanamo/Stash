@@ -3,7 +3,7 @@ general:
   no-permission: "&cYou do not have permission to do that."
 
 stash:
-  usage: "&eUsage: /stash <reload|backup|backups|restore|previewrestore|confirmrestore|audit>"
+  usage: "&eUse /stash to open admin GUI, or /stash <reload|backup|backups|restore|previewrestore|confirmrestore|rollback|audit>"
   reloaded: "&aStash config, messages, and vault data reloaded."
   backup-created: "&aBackup created with timestamp %value%."
   backup-failed: "&cFailed to create backup."
@@ -15,6 +15,7 @@ stash:
   restore-preview: "&eRestore preview: %value%"
   restore-preview-confirm: "&cRun /stash confirmrestore within 30 seconds to apply."
   restore-confirm-missing: "&cNo pending restore confirmation."
+  rollback-usage: "&eUsage: /stash rollback <history|latest>"
 
 vault:
   invalid-page: "&cThat vault page is invalid."

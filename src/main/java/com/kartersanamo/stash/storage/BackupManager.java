@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class BackupManager {
@@ -77,15 +78,12 @@ public class BackupManager {
     public RestorePreview previewRestore(String vaultBackupName) {
         File backupFile = new File(plugin.getDataFolder(), "backups/" + vaultBackupName);
         if (!backupFile.exists()) {
-            return new RestorePreview(false, vaultBackupName, 0, 0);
+            return new RestorePreview(false, vaultBackupName, new VaultStats(0, 0, 0), new VaultStats(0, 0, 0));
         }
 
         FileConfiguration current = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "vaults.yml"));
         FileConfiguration incoming = YamlConfiguration.loadConfiguration(backupFile);
-
-        int currentPlayers = getPlayerCount(current);
-        int backupPlayers = getPlayerCount(incoming);
-        return new RestorePreview(true, vaultBackupName, currentPlayers, backupPlayers);
+        return new RestorePreview(true, vaultBackupName, calculateStats(current), calculateStats(incoming));
     }
 
     public List<String> listBackupIndexSummaries() {
@@ -136,6 +134,37 @@ public class BackupManager {
         return config.getConfigurationSection("players").getKeys(false).size();
     }
 
-    public record RestorePreview(boolean exists, String backupName, int currentPlayerEntries, int backupPlayerEntries) {
+    public String getLatestBackupName() {
+        return listBackups().stream().max(String::compareTo).orElse(null);
+    }
+
+    private VaultStats calculateStats(FileConfiguration config) {
+        var section = config.getConfigurationSection("players");
+        if (section == null) {
+            return new VaultStats(0, 0, 0);
+        }
+
+        int players = 0;
+        int pages = 0;
+        int items = 0;
+        for (String playerId : section.getKeys(false)) {
+            players++;
+            var pagesSection = config.getConfigurationSection("players." + playerId + ".pages");
+            if (pagesSection == null) {
+                continue;
+            }
+            for (String pageKey : pagesSection.getKeys(false)) {
+                pages++;
+                List<?> raw = config.getList("players." + playerId + ".pages." + pageKey + ".contents", List.of());
+                items += (int) raw.stream().filter(Objects::nonNull).count();
+            }
+        }
+        return new VaultStats(players, pages, items);
+    }
+
+    public record RestorePreview(boolean exists, String backupName, VaultStats current, VaultStats backup) {
+    }
+
+    public record VaultStats(int players, int pages, int items) {
     }
 }

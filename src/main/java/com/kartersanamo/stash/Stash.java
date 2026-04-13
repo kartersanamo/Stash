@@ -7,6 +7,7 @@ import com.kartersanamo.stash.api.gui.GUIManager;
 import com.kartersanamo.stash.audit.AuditManager;
 import com.kartersanamo.stash.command.PvCommand;
 import com.kartersanamo.stash.command.StashCommand;
+import com.kartersanamo.stash.listeners.AdminGUIListener;
 import com.kartersanamo.stash.listeners.VaultListener;
 import com.kartersanamo.stash.storage.BackupManager;
 import com.kartersanamo.stash.vault.VaultManager;
@@ -45,6 +46,7 @@ public final class Stash extends JavaPlugin {
         commandManager.register("stash", new StashCommand(this));
 
         getServer().getPluginManager().registerEvents(new VaultListener(this), this);
+        getServer().getPluginManager().registerEvents(new AdminGUIListener(this), this);
     }
 
     @Override
