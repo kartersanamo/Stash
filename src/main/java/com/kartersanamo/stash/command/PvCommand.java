@@ -176,7 +176,7 @@ public class PvCommand implements CommandExecutor, TabCompleter {
 
             int rows = plugin.getVaultManager().getRows(target.getUniqueId(), target.getPlayer());
             int maxPages = plugin.getVaultManager().getAccessiblePages(target.getUniqueId(), target.getPlayer());
-            vaultGUI.open(player, target.getUniqueId(), Math.max(1, page), maxPages, rows, args[2]);
+            vaultGUI.open(player, target.getUniqueId(), Math.max(1, page), maxPages, rows, args[2], true);
             plugin.getMessagesUtil().send(player, "admin.inspect-opened", "%player%", args[2]);
             plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_INSPECT", "target=" + args[2] + ",page=" + page);
             return true;

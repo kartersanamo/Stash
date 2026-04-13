@@ -21,6 +21,10 @@ public class VaultGUI {
     }
 
     public void open(Player viewer, UUID owner, int page, int maxPages, int rows, String ownerName) {
+        open(viewer, owner, page, maxPages, rows, ownerName, false);
+    }
+
+    public void open(Player viewer, UUID owner, int page, int maxPages, int rows, String ownerName, boolean readOnly) {
         String title = plugin.getMessagesUtil().get("gui.vault-title")
                 .replace("%owner%", ownerName)
                 .replace("%page%", String.valueOf(page));
@@ -46,9 +50,25 @@ public class VaultGUI {
                 .name(plugin.getMessagesUtil().get("gui.next-name"))
                 .lore(List.of(plugin.getMessagesUtil().get("gui.next-lore")))
                 .build());
+        if (!readOnly) {
+            inventory.setItem(navStart + 2, new ItemBuilder(Material.IRON_DOOR)
+                    .name(plugin.getMessagesUtil().get("gui.toggle-lock-name"))
+                    .lore(List.of(plugin.getMessagesUtil().get("gui.toggle-lock-lore")))
+                    .build());
+            inventory.setItem(navStart + 6, new ItemBuilder(Material.BARRIER)
+                    .name(plugin.getMessagesUtil().get("gui.clear-name"))
+                    .lore(List.of(plugin.getMessagesUtil().get("gui.clear-lore")))
+                    .build());
+        }
+        if (readOnly) {
+            inventory.setItem(navStart + 7, new ItemBuilder(Material.BOOK)
+                    .name(plugin.getMessagesUtil().get("gui.read-only-name"))
+                    .lore(List.of(plugin.getMessagesUtil().get("gui.read-only-lore")))
+                    .build());
+        }
 
         plugin.getGuiManager().setOpenVault(viewer.getUniqueId(),
-                new OpenVaultContext(owner, ownerName, page, maxPages, rows, title));
+                new OpenVaultContext(owner, ownerName, page, maxPages, rows, title, readOnly));
         viewer.openInventory(inventory);
 
         if (plugin.getConfigUtil().playOpenSound()) {
