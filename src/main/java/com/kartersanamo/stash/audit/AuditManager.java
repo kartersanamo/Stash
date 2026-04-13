@@ -98,6 +98,10 @@ public class AuditManager {
         return new AuditPage(lines, safePage, totalPages, events.size());
     }
 
+    public int getTotalEvents() {
+        return data.getMapList("events").size();
+    }
+
     public record AuditPage(List<String> lines, int page, int totalPages, int totalMatches) {
     }
 

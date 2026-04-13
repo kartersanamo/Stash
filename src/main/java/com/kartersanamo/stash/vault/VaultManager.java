@@ -182,6 +182,14 @@ public class VaultManager {
         save();
     }
 
+    public Integer getRowsOverrideValue(UUID playerId) {
+        return getRowsOverride(playerId);
+    }
+
+    public Integer getPagesOverrideValue(UUID playerId) {
+        return getPageOverride(playerId);
+    }
+
     private Integer getRowsOverride(UUID playerId) {
         if (!data.contains("players." + playerId + ".settings.rows")) {
             return null;
