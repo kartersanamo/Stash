@@ -41,27 +41,49 @@ public class VaultManager {
     }
 
     public ItemStack[] getPageContents(UUID owner, int page, int rows) {
-        String path = "players." + owner + ".pages." + page + ".contents";
-        List<ItemStack> contents = data.getList(path, new ArrayList<>())
+        ItemStack[] items = new ItemStack[rows * 9];
+        String basePath = "players." + owner + ".pages." + page;
+        ConfigurationSection slotsSection = data.getConfigurationSection(basePath + ".slots");
+        if (slotsSection != null) {
+            for (String key : slotsSection.getKeys(false)) {
+                try {
+                    int slot = Integer.parseInt(key);
+                    if (slot < 0 || slot >= items.length) {
+                        continue;
+                    }
+                    items[slot] = data.getItemStack(basePath + ".slots." + key);
+                } catch (NumberFormatException ignored) {
+                    // Ignore malformed keys.
+                }
+            }
+            return items;
+        }
+
+        // Backward compatibility: migrate older list-based saves on read.
+        String legacyPath = basePath + ".contents";
+        List<ItemStack> legacyContents = data.getList(legacyPath, new ArrayList<>())
                 .stream()
                 .filter(ItemStack.class::isInstance)
                 .map(ItemStack.class::cast)
                 .toList();
-
-        ItemStack[] items = new ItemStack[rows * 9];
-        for (int i = 0; i < items.length && i < contents.size(); i++) {
-            items[i] = contents.get(i);
+        for (int i = 0; i < items.length && i < legacyContents.size(); i++) {
+            items[i] = legacyContents.get(i);
         }
         return items;
     }
 
     public void setPageContents(UUID owner, int page, ItemStack[] contents) {
-        String path = "players." + owner + ".pages." + page + ".contents";
-        List<ItemStack> list = new ArrayList<>(contents.length);
-        for (ItemStack content : contents) {
-            list.add(content);
+        String basePath = "players." + owner + ".pages." + page;
+        data.set(basePath + ".contents", null); // Remove legacy compacting format.
+        data.set(basePath + ".slots", null);
+
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType().isAir()) {
+                continue;
+            }
+            data.set(basePath + ".slots." + i, item);
         }
-        data.set(path, list);
     }
 
     public void clearPage(UUID owner, int page, int rows) {
