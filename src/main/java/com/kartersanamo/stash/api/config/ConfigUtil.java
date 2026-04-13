@@ -45,6 +45,10 @@ public class ConfigUtil {
         return (float) config.getDouble("effects.open-sound.pitch", 1.0D);
     }
 
+    public int getAuditMaxEntries() {
+        return Math.max(100, config.getInt("audit.max-entries", 5000));
+    }
+
     public static int clampRows(int rows) {
         if (rows < 1) {
             return 1;

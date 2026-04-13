@@ -3,13 +3,23 @@ general:
   no-permission: "&cYou do not have permission to do that."
 
 stash:
-  usage: "&eUsage: /stash reload"
+  usage: "&eUsage: /stash <reload|backup|backups|restore>"
   reloaded: "&aStash config, messages, and vault data reloaded."
+  backup-created: "&aBackup created with timestamp %value%."
+  backup-failed: "&cFailed to create backup."
+  backup-list: "&eAvailable backups: %value%"
+  restore-usage: "&eUsage: /stash restore <backup-file>"
+  restore-success: "&aRestored vault data from %value%."
+  restore-missing: "&cBackup file not found."
+  restore-failed: "&cFailed to restore backup."
 
 vault:
   invalid-page: "&cThat vault page is invalid."
   page-locked: "&cYou only have access to %value% page(s)."
   list-pages: "&aYou currently have access to %value% vault page(s)."
+  search-usage: "&eUsage: /pv search <query>"
+  search-none: "&cNo vault pages matched '%query%'."
+  search-results: "&aMatches found on pages: %value%"
 
 admin:
   usage: "&eUsage: /pv admin <inspect|setpages|setrows> <player> [value]"
@@ -21,3 +31,8 @@ admin:
 
 gui:
   vault-title: "&8Stash: %owner% [Page %page%]"
+  prev-name: "&ePrevious Page"
+  prev-lore: "&7Click to open previous page"
+  next-name: "&eNext Page"
+  next-lore: "&7Click to open next page"
+  page-info-name: "&bPage %page%/%max%"

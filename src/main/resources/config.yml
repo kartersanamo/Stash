@@ -9,3 +9,6 @@ effects:
     sound: BLOCK_ENDER_CHEST_OPEN
     volume: 1.0
     pitch: 1.0
+
+audit:
+  max-entries: 5000

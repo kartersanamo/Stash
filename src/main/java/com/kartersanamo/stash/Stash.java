@@ -4,9 +4,11 @@ import com.kartersanamo.stash.api.command.CommandManager;
 import com.kartersanamo.stash.api.config.ConfigUtil;
 import com.kartersanamo.stash.api.config.MessagesUtil;
 import com.kartersanamo.stash.api.gui.GUIManager;
+import com.kartersanamo.stash.audit.AuditManager;
 import com.kartersanamo.stash.command.PvCommand;
 import com.kartersanamo.stash.command.StashCommand;
 import com.kartersanamo.stash.listeners.VaultListener;
+import com.kartersanamo.stash.storage.BackupManager;
 import com.kartersanamo.stash.vault.VaultManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,6 +18,8 @@ public final class Stash extends JavaPlugin {
     private MessagesUtil messagesUtil;
     private GUIManager guiManager;
     private VaultManager vaultManager;
+    private AuditManager auditManager;
+    private BackupManager backupManager;
 
     @Override
     public void onEnable() {
@@ -23,13 +27,17 @@ public final class Stash extends JavaPlugin {
         saveDefaultConfig();
         saveResourceIfMissing("messages.yml");
         saveResourceIfMissing("vaults.yml");
+        saveResourceIfMissing("audits.yml");
 
         this.configUtil = new ConfigUtil(this);
         this.messagesUtil = new MessagesUtil(this);
         this.guiManager = new GUIManager(this);
         this.vaultManager = new VaultManager(this);
+        this.auditManager = new AuditManager(this);
+        this.backupManager = new BackupManager(this);
 
         this.vaultManager.load();
+        this.auditManager.load();
         this.messagesUtil.reload();
 
         CommandManager commandManager = new CommandManager(this);
@@ -43,6 +51,9 @@ public final class Stash extends JavaPlugin {
     public void onDisable() {
         if (vaultManager != null) {
             vaultManager.save();
+        }
+        if (auditManager != null) {
+            auditManager.save();
         }
     }
 
@@ -66,11 +77,20 @@ public final class Stash extends JavaPlugin {
         return vaultManager;
     }
 
+    public AuditManager getAuditManager() {
+        return auditManager;
+    }
+
+    public BackupManager getBackupManager() {
+        return backupManager;
+    }
+
     public void reloadPlugin() {
         reloadConfig();
         configUtil.reload();
         messagesUtil.reload();
         vaultManager.load();
+        auditManager.load();
     }
 
     private void saveResourceIfMissing(String fileName) {

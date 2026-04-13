@@ -45,6 +45,25 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (args[0].equalsIgnoreCase("search")) {
+            if (args.length < 2) {
+                plugin.getMessagesUtil().send(player, "vault.search-usage");
+                return true;
+            }
+            String query = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
+            int rows = plugin.getVaultManager().getRows(player);
+            int maxPages = plugin.getVaultManager().getAccessiblePages(player);
+            List<Integer> matches = plugin.getVaultManager().searchPages(player.getUniqueId(), rows, maxPages, query);
+            if (matches.isEmpty()) {
+                plugin.getMessagesUtil().send(player, "vault.search-none", "%query%", query);
+            } else {
+                plugin.getMessagesUtil().send(player, "vault.search-results",
+                        "%value%", matches.toString().replace("[", "").replace("]", ""));
+            }
+            plugin.getAuditManager().log(player.getUniqueId(), "SEARCH", "query=" + query + ",matches=" + matches.size());
+            return true;
+        }
+
         if (args[0].equalsIgnoreCase("admin")) {
             return handleAdmin(player, args);
         }
@@ -86,10 +105,11 @@ public class PvCommand implements CommandExecutor, TabCompleter {
                 }
             }
 
-            int rows = target.getPlayer() == null ? plugin.getConfigUtil().getDefaultRows() :
-                    plugin.getVaultManager().getRows(target.getPlayer());
-            vaultGUI.open(player, target.getUniqueId(), Math.max(1, page), rows, args[2]);
+            int rows = plugin.getVaultManager().getRows(target.getUniqueId(), target.getPlayer());
+            int maxPages = plugin.getVaultManager().getAccessiblePages(target.getUniqueId(), target.getPlayer());
+            vaultGUI.open(player, target.getUniqueId(), Math.max(1, page), maxPages, rows, args[2]);
             plugin.getMessagesUtil().send(player, "admin.inspect-opened", "%player%", args[2]);
+            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_INSPECT", "target=" + args[2] + ",page=" + page);
             return true;
         }
 
@@ -104,6 +124,8 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             }
             plugin.getVaultManager().setPagesOverride(target.getUniqueId(), pages);
             plugin.getMessagesUtil().send(player, "admin.updated-pages", "%value%", String.valueOf(pages));
+            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_SET_PAGES",
+                    "target=" + args[2] + ",value=" + pages);
             return true;
         }
 
@@ -118,6 +140,8 @@ public class PvCommand implements CommandExecutor, TabCompleter {
             }
             plugin.getVaultManager().setRowsOverride(target.getUniqueId(), rows);
             plugin.getMessagesUtil().send(player, "admin.updated-rows", "%value%", String.valueOf(rows));
+            plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_SET_ROWS",
+                    "target=" + args[2] + ",value=" + rows);
             return true;
         }
 
@@ -134,13 +158,14 @@ public class PvCommand implements CommandExecutor, TabCompleter {
         }
 
         int rows = plugin.getVaultManager().getRows(player);
-        vaultGUI.open(player, player.getUniqueId(), sanitizedPage, rows, player.getName());
+        vaultGUI.open(player, player.getUniqueId(), sanitizedPage, unlockedPages, rows, player.getName());
+        plugin.getAuditManager().log(player.getUniqueId(), "OPEN_VAULT", "page=" + sanitizedPage);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("list", "admin", "1", "2", "3");
+            return List.of("list", "search", "admin", "1", "2", "3");
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {

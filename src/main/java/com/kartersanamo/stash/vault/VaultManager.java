@@ -8,12 +8,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class VaultManager {
@@ -63,19 +65,47 @@ public class VaultManager {
     }
 
     public int getAccessiblePages(Player player) {
-        Integer override = getPageOverride(player.getUniqueId());
+        return getAccessiblePages(player.getUniqueId(), player);
+    }
+
+    public int getAccessiblePages(UUID playerId, Player onlinePlayer) {
+        Integer override = getPageOverride(playerId);
         if (override != null) {
             return override;
         }
 
         ConfigUtil config = plugin.getConfigUtil();
         int pages = config.getDefaultPages();
+        if (onlinePlayer == null) {
+            return pages;
+        }
+
         for (int i = 1; i <= config.getMaxPages(); i++) {
-            if (player.hasPermission("stash.pages." + i)) {
+            if (onlinePlayer.hasPermission("stash.pages." + i)) {
                 pages = Math.max(pages, i);
             }
         }
         return pages;
+    }
+
+    public int getRows(UUID playerId, Player onlinePlayer) {
+        Integer rowOverride = getRowsOverride(playerId);
+        if (rowOverride != null) {
+            return ConfigUtil.clampRows(rowOverride);
+        }
+
+        int rows = plugin.getConfigUtil().getDefaultRows();
+        if (onlinePlayer == null) {
+            return ConfigUtil.clampRows(rows);
+        }
+
+        int[] allowed = new int[]{1, 2, 3, 4, 5, 6};
+        for (int row : allowed) {
+            if (onlinePlayer.hasPermission("stash.size." + row)) {
+                rows = Math.max(rows, row);
+            }
+        }
+        return ConfigUtil.clampRows(rows);
     }
 
     public int getRows(Player player) {
@@ -92,6 +122,40 @@ public class VaultManager {
             }
         }
         return ConfigUtil.clampRows(rows);
+    }
+
+    public List<Integer> searchPages(UUID owner, int rows, int maxPages, String query) {
+        String normalized = query.toLowerCase(Locale.ROOT);
+        List<Integer> matches = new ArrayList<>();
+
+        for (int page = 1; page <= maxPages; page++) {
+            ItemStack[] contents = getPageContents(owner, page, rows);
+            boolean matched = false;
+            for (ItemStack item : contents) {
+                if (item == null || item.getType().isAir()) {
+                    continue;
+                }
+
+                String material = item.getType().name().toLowerCase(Locale.ROOT);
+                if (material.contains(normalized)) {
+                    matched = true;
+                    break;
+                }
+
+                ItemMeta meta = item.getItemMeta();
+                if (meta != null && meta.hasDisplayName()
+                        && meta.getDisplayName().toLowerCase(Locale.ROOT).contains(normalized)) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (matched) {
+                matches.add(page);
+            }
+        }
+
+        return matches;
     }
 
     public void setRowsOverride(UUID playerId, int rows) {
