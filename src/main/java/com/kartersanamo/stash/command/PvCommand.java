@@ -2,6 +2,7 @@ package com.kartersanamo.stash.command;
 
 import com.kartersanamo.stash.Stash;
 import com.kartersanamo.stash.api.chat.ColorUtil;
+import com.kartersanamo.stash.gui.PersonalVaultGUI;
 import com.kartersanamo.stash.gui.VaultGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,11 +21,13 @@ import java.util.UUID;
 public class PvCommand implements CommandExecutor, TabCompleter {
     private final Stash plugin;
     private final VaultGUI vaultGUI;
+    private final PersonalVaultGUI personalVaultGUI;
     private final Map<UUID, PendingClear> pendingClears = new HashMap<>();
 
     public PvCommand(Stash plugin) {
         this.plugin = plugin;
         this.vaultGUI = new VaultGUI(plugin);
+        this.personalVaultGUI = new PersonalVaultGUI(plugin);
     }
 
     @Override
@@ -40,13 +43,12 @@ public class PvCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 0) {
-            openOwnVault(player, 1);
+            personalVaultGUI.openList(player);
             return true;
         }
 
         if (args[0].equalsIgnoreCase("list")) {
-            int pages = plugin.getVaultManager().getAccessiblePages(player);
-            plugin.getMessagesUtil().send(player, "vault.list-pages", "%value%", String.valueOf(pages));
+            personalVaultGUI.openList(player);
             return true;
         }
 

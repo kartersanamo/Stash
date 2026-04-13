@@ -1,6 +1,7 @@
 package com.kartersanamo.stash;
 
 import com.kartersanamo.stash.api.command.CommandManager;
+import com.kartersanamo.stash.api.chat.ChatInputManager;
 import com.kartersanamo.stash.api.config.ConfigUtil;
 import com.kartersanamo.stash.api.config.MessagesUtil;
 import com.kartersanamo.stash.api.gui.GUIManager;
@@ -8,6 +9,8 @@ import com.kartersanamo.stash.audit.AuditManager;
 import com.kartersanamo.stash.command.PvCommand;
 import com.kartersanamo.stash.command.StashCommand;
 import com.kartersanamo.stash.listeners.AdminGUIListener;
+import com.kartersanamo.stash.listeners.ChatInputListener;
+import com.kartersanamo.stash.listeners.PersonalVaultGUIListener;
 import com.kartersanamo.stash.listeners.VaultListener;
 import com.kartersanamo.stash.storage.BackupManager;
 import com.kartersanamo.stash.vault.VaultManager;
@@ -21,6 +24,7 @@ public final class Stash extends JavaPlugin {
     private VaultManager vaultManager;
     private AuditManager auditManager;
     private BackupManager backupManager;
+    private ChatInputManager chatInputManager;
 
     @Override
     public void onEnable() {
@@ -36,6 +40,7 @@ public final class Stash extends JavaPlugin {
         this.vaultManager = new VaultManager(this);
         this.auditManager = new AuditManager(this);
         this.backupManager = new BackupManager(this);
+        this.chatInputManager = new ChatInputManager();
 
         this.vaultManager.load();
         this.auditManager.load();
@@ -47,6 +52,8 @@ public final class Stash extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new VaultListener(this), this);
         getServer().getPluginManager().registerEvents(new AdminGUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatInputListener(this), this);
+        getServer().getPluginManager().registerEvents(new PersonalVaultGUIListener(this), this);
     }
 
     @Override
@@ -85,6 +92,10 @@ public final class Stash extends JavaPlugin {
 
     public BackupManager getBackupManager() {
         return backupManager;
+    }
+
+    public ChatInputManager getChatInputManager() {
+        return chatInputManager;
     }
 
     public void reloadPlugin() {

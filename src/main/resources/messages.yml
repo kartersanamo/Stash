@@ -32,6 +32,13 @@ vault:
   clear-confirm: "&cType /pv confirmclear in 30 seconds to clear page %value%."
   clear-none: "&cNo pending clear confirmation found."
   cleared: "&aVault page %value% has been cleared."
+  manage-enter-name: "&eType the new vault display name in chat."
+  manage-enter-material: "&eType the new icon material in chat (example: CHEST)."
+  manage-enter-description: "&eType the new vault description in chat."
+  manage-invalid-material: "&cInvalid material. Try again with a valid Bukkit material."
+  manage-name-updated: "&aVault name updated."
+  manage-material-updated: "&aVault icon material updated."
+  manage-description-updated: "&aVault description updated."
 
 admin:
   usage: "&eUsage: /pv admin <inspect|setpages|setrows|audit> ..."

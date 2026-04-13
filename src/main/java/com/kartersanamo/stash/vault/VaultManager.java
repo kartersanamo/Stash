@@ -204,6 +204,22 @@ public class VaultManager {
         save();
     }
 
+    public PageDisplayMeta getPageDisplayMeta(UUID playerId, int page) {
+        String base = "players." + playerId + ".pages." + page + ".display";
+        String name = data.getString(base + ".name", "Vault " + page);
+        String material = data.getString(base + ".material", "CHEST");
+        String description = data.getString(base + ".description", "Click to open this vault.");
+        return new PageDisplayMeta(name, material, description);
+    }
+
+    public void setPageDisplayMeta(UUID playerId, int page, PageDisplayMeta meta) {
+        String base = "players." + playerId + ".pages." + page + ".display";
+        data.set(base + ".name", meta.name());
+        data.set(base + ".material", meta.material());
+        data.set(base + ".description", meta.description());
+        save();
+    }
+
     public Integer getRowsOverrideValue(UUID playerId) {
         return getRowsOverride(playerId);
     }
@@ -239,5 +255,8 @@ public class VaultManager {
                 })
                 .sorted(Comparator.naturalOrder())
                 .toList();
+    }
+
+    public record PageDisplayMeta(String name, String material, String description) {
     }
 }
