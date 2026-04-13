@@ -25,7 +25,7 @@ public class ConfigUtil {
     }
 
     public int getDefaultRows() {
-        int rows = config.getInt("vault.default-rows", 3);
+        int rows = config.getInt("vault.default-rows", 5);
         return clampRows(rows);
     }
 
@@ -53,8 +53,8 @@ public class ConfigUtil {
         if (rows < 1) {
             return 1;
         }
-        if (rows > 6) {
-            return 6;
+        if (rows > 5) {
+            return 5;
         }
         return rows;
     }

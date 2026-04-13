@@ -97,8 +97,9 @@ public class VaultManager {
 
     public int getAccessiblePages(UUID playerId, Player onlinePlayer) {
         Integer override = getPageOverride(playerId);
+        int maxPages = plugin.getConfigUtil().getMaxPages();
         if (override != null) {
-            return override;
+            return Math.max(1, Math.min(override, maxPages));
         }
 
         ConfigUtil config = plugin.getConfigUtil();
@@ -126,7 +127,7 @@ public class VaultManager {
             return ConfigUtil.clampRows(rows);
         }
 
-        int[] allowed = new int[]{1, 2, 3, 4, 5, 6};
+        int[] allowed = new int[]{1, 2, 3, 4, 5};
         for (int row : allowed) {
             if (onlinePlayer.hasPermission("stash.size." + row)) {
                 rows = Math.max(rows, row);
@@ -142,7 +143,7 @@ public class VaultManager {
         }
 
         int rows = plugin.getConfigUtil().getDefaultRows();
-        int[] allowed = new int[]{1, 2, 3, 4, 5, 6};
+        int[] allowed = new int[]{1, 2, 3, 4, 5};
         for (int row : allowed) {
             if (player.hasPermission("stash.size." + row)) {
                 rows = Math.max(rows, row);
@@ -191,7 +192,8 @@ public class VaultManager {
     }
 
     public void setPagesOverride(UUID playerId, int pages) {
-        data.set("players." + playerId + ".settings.pages", Math.max(1, pages));
+        int clamped = Math.max(1, Math.min(pages, plugin.getConfigUtil().getMaxPages()));
+        data.set("players." + playerId + ".settings.pages", clamped);
         save();
     }
 

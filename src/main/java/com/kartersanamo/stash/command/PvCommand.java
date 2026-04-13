@@ -194,6 +194,10 @@ public class PvCommand implements CommandExecutor, TabCompleter {
                 plugin.getMessagesUtil().send(player, "admin.number-required");
                 return true;
             }
+            int maxPages = plugin.getConfigUtil().getMaxPages();
+            if (pages > maxPages) {
+                pages = maxPages;
+            }
             plugin.getVaultManager().setPagesOverride(target.getUniqueId(), pages);
             plugin.getMessagesUtil().send(player, "admin.updated-pages", "%value%", String.valueOf(pages));
             plugin.getAuditManager().log(player.getUniqueId(), "ADMIN_SET_PAGES",
